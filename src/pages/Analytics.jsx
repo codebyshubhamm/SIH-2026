@@ -42,9 +42,11 @@ const DIURNAL_WINDOWS = [
   { label: '21:00–24:00', name: '21:00–24:00', weight: 0.09, indRatio: 0.38, agriRatio: 0.10, wildRatio: 0.04, mineRatio: 0.48 },
 ];
 
+const EMPTY_EVENTS = [];
+
 export default function Analytics() {
   const storeEvents = useStore((s) => s.events?.features);
-  const events = storeEvents || [];
+  const events = storeEvents || EMPTY_EVENTS;
   const [timeHorizon, setTimeHorizon] = useState('24H'); // '24H' | '7D' | '30D'
 
   // Total counts by classification category

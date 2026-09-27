@@ -4,10 +4,12 @@ import { useStore } from '../store/useStore';
 import { RISK_COLORS } from '../data/mockData';
 import { getCategoryColor, getCategoryShort, formatDuration } from '../utils/formatters';
 
+const EMPTY_EVENTS = [];
+
 export default function Intelligence() {
   const selectEvent = useStore((s) => s.selectEvent);
   const storeEvents = useStore((s) => s.events?.features);
-  const events = storeEvents || [];
+  const events = storeEvents || EMPTY_EVENTS;
   const reduceMotion = useReducedMotion();
 
   const sensorPasses = useMemo(() => {

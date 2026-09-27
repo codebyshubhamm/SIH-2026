@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { fetchLiveEvents, predictLocation as apiPredictLocation } from '../services/api';
+import { mockGeoJSON } from '../data/mockData';
 
 export const TIME_PRESETS = {
   '24H': [29 / 30, 1],
@@ -70,8 +71,8 @@ export function filterEvents(events, filters, timeSliderValue) {
  * active filters, map display state, and location predictions.
  */
 export const useStore = create((set, get) => ({
-  // All events (GeoJSON) - Powered by NASA FIRMS Live Pipeline
-  events: {
+  // All events (GeoJSON) - Initialized with fallback so UI is never blank
+  events: mockGeoJSON || {
     type: 'FeatureCollection',
     metadata: { source: 'live' },
     features: [],
@@ -84,17 +85,33 @@ export const useStore = create((set, get) => ({
     try {
       console.info('[useStore] Hydrating live NASA FIRMS events from backend...');
       const events = await fetchLiveEvents();
-      const count = events.features?.length || 0;
-      const isDemo = events.metadata?.source === 'demo' || events.metadata?.data_mode === 'demo';
+      const count = events?.features?.length || 0;
+      const isDemo = events?.metadata?.source === 'demo' || events?.metadata?.data_mode === 'demo';
       console.info('[useStore] Live events hydrated. Count:', count, '| Source mode:', isDemo ? 'demo' : 'live');
+      
+      if (events && Array.isArray(events.features) && events.features.length > 0) {
+        set({
+          events,
+          dataSource: isDemo ? 'demo' : 'live',
+          loading: false,
+        });
+      } else {
+        // Fallback to mock data if backend returned 0 features
+        console.warn('[useStore] Backend returned empty features, using resilient fallback dataset');
+        set({
+          events: mockGeoJSON,
+          dataSource: 'demo',
+          loading: false,
+        });
+      }
+    } catch (error) {
+      console.error('[useStore] FIRMS live pipeline hydration failed, using fallback:', error);
       set({
-        events,
-        dataSource: isDemo ? 'demo' : 'live',
+        events: mockGeoJSON,
+        dataSource: 'demo',
+        apiError: error.message,
         loading: false,
       });
-    } catch (error) {
-      console.error('[useStore] FIRMS live pipeline hydration failed:', error);
-      set({ apiError: error.message, loading: false });
     }
   },
 

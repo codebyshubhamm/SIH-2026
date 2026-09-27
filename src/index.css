@@ -31,11 +31,11 @@
 }
 
 @theme {
-  /* Base palette — warm, clean operational contrast */
-  --color-surface: #FAFAF8;
+  /* Warm Beige / Cream Operational Palette — Exactly matching updated UI video */
+  --color-surface: #FAF7F2;
   --color-panel: #FFFFFF;
   --color-surface-card: #FFFFFF;
-  --color-surface-muted: #F2F0EB;
+  --color-surface-muted: #F3EFE6;
   --color-surface-elevated: #FFFFFF;
 
   --color-accent: #F5C518;
@@ -43,9 +43,9 @@
   --color-accent-hover: #EAB308;
   --color-status-live: #16A34A;
 
-  --color-border: #E8E5DE;
-  --color-border-subtle: #F0EDE6;
-  --color-border-strong: #D8D4CA;
+  --color-border: #E8E3D7;
+  --color-border-subtle: #F0EBE0;
+  --color-border-strong: #D6D0C2;
 
   --color-text-primary: #1A1A17;
   --color-text-secondary: #484841;
@@ -224,9 +224,39 @@ a, button, input, select, textarea {
   100% { left: 6%; }
 }
 
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.radar-sweep {
+  transform-origin: center center;
+  animation: radar-sweep 4s linear infinite;
+}
+
 @keyframes cbdown {
   0%, 100% { transform: translateY(0); opacity: 0.4; }
   50% { transform: translateY(6px); opacity: 1; }
+}
+
+@keyframes reticle3d {
+  0% { transform: translate(-50%, -50%) rotateX(65deg) rotateZ(0deg); }
+  100% { transform: translate(-50%, -50%) rotateX(65deg) rotateZ(360deg); }
+}
+
+@keyframes wave3d {
+  0% { transform: translate(-50%, -50%) rotateX(65deg) scale(0.3); opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) rotateX(65deg) scale(2.6); opacity: 0; }
+}
+
+@keyframes beamPulse {
+  0%, 100% { opacity: 0.65; transform: scaleX(0.85); }
+  50% { opacity: 1; transform: scaleX(1.2); }
+}
+
+@keyframes holoShimmer {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(250%); }
 }
 
 .pulse-ring {

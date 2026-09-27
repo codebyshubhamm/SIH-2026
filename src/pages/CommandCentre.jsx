@@ -1,10 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { RISK_COLORS } from '../data/mockData';
-import {
-  getCategoryColor, getRiskColor, getCategoryShort, buildReasonString,
-  formatDuration,
-} from '../utils/formatters';
+import { getCategoryColor, getRiskColor } from '../utils/formatters';
 import MapView from '../components/map/MapView';
 
 export default function CommandCentre() {

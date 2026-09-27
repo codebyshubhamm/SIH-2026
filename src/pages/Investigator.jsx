@@ -7,9 +7,11 @@ import RiskFactorBreakdown from '../components/shared/RiskFactorBreakdown';
 import AskThermos from '../components/shared/AskThermos';
 import { analyzeHotspotAI } from '../services/api';
 
+const EMPTY_EVENTS = [];
+
 export default function Investigator() {
   const storeEvents = useStore((s) => s.events?.features);
-  const events = storeEvents || [];
+  const events = storeEvents || EMPTY_EVENTS;
   const selectEvent = useStore((s) => s.selectEvent);
   const selectedEventId = useStore((s) => s.selectedEventId);
 
@@ -379,7 +381,7 @@ export default function Investigator() {
             )}
             {(liveAiResult.rag_tactical_intelligence?.answer || liveAiResult.rag_copilot_brief?.tactical_markdown_brief) && (
               <div className="whitespace-pre-wrap text-slate-200 bg-slate-800/80 p-3 rounded border border-slate-700 leading-relaxed">
-                {(liveAiResult.rag_tactical_intelligence?.answer || liveAiResult.rag_copilot_brief?.tactical_markdown_brief).replace(/^###\s*/gm, '').replace(/\*\*/g, '')}
+                {(liveAiResult.rag_tactical_intelligence?.answer || liveAiResult.rag_copilot_brief?.tactical_markdown_brief || '').replace(/^###\s*/gm, '').replace(/\*\*/g, '')}
               </div>
             )}
           </div>

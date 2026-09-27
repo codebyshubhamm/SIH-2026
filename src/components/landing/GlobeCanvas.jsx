@@ -102,8 +102,8 @@ export default function GlobeCanvas() {
     canvas.height = 1024;
     const ctx = canvas.getContext('2d');
 
-    // Base light ocean matching Main Website's #FAFAF8 surface
-    ctx.fillStyle = '#FAFAF8';
+    // Base light ocean matching warm cream surface
+    ctx.fillStyle = '#FAF7F2';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const canvasTexture = new THREE.CanvasTexture(canvas);
@@ -135,9 +135,9 @@ export default function GlobeCanvas() {
     }
     const rimGeo = new THREE.BufferGeometry().setFromPoints(rimPoints);
     const rimMat = new THREE.LineBasicMaterial({
-      color: '#D8D4CA',
+      color: '#D6CFBF',
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.6,
       depthWrite: false,
     });
     const rimLine = new THREE.Line(rimGeo, rimMat);
@@ -146,9 +146,9 @@ export default function GlobeCanvas() {
     // 4. Subtle 3D Wireframe Grid Lines (Properly clamped on the 1.002 sphere surface)
     const gridGroup = new THREE.Group();
     const gridMat = new THREE.LineBasicMaterial({
-      color: '#C8C4B8',
+      color: '#C4BCAB',
       transparent: true,
-      opacity: 0.25,
+      opacity: 0.3,
       depthWrite: false,
     });
 

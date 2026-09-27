@@ -36,3 +36,8 @@ test_thermos.db
 *.njsproj
 *.sln
 *.sw?
+
+# Reference videos (avoid bloating git repo)
+reference-videos/*.mp4
+reference-videos/*.mov
+reference-videos/*.webm
