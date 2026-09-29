@@ -87,13 +87,12 @@ export default function HotspotLayer() {
 
     const addLayers = () => {
       try {
-        if (!map.isStyleLoaded()) {
+        if (!map.getStyle()) {
           return;
         }
         const data = filteredGeoJsonRef.current;
 
         // Do not gate local GeoJSON layers on remote raster tile completion.
-        // A slow/404 tile source must not suppress fire markers.
         if (!map.getSource(SOURCE_ID)) {
           map.addSource(SOURCE_ID, {
             type: 'geojson',
