@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useStore } from '../../store/useStore';
 import { getRiskColor, getCategoryColor } from '../../utils/formatters';
 
@@ -8,44 +9,70 @@ export default function PredictionPanel() {
   const predictError = useStore((s) => s.predictError);
   const clearPrediction = useStore((s) => s.clearPrediction);
 
+  // Close popup when user presses Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        clearPrediction();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [clearPrediction]);
+
   if (!predictCoords && !predictLoading && !prediction) {
     return null;
   }
 
   return (
     <div
-      className="absolute bottom-14 left-3 z-20 max-w-sm w-full sm:w-[370px] rounded-2xl overflow-hidden transition-all duration-300 animate-in fade-in slide-in-from-bottom-3"
+      className="absolute bottom-14 left-3 z-30 max-w-sm w-[calc(100%-24px)] sm:w-[380px] max-h-[calc(100%-4.5rem)] flex flex-col rounded-2xl overflow-hidden transition-all duration-300 animate-in fade-in slide-in-from-bottom-3 shadow-2xl"
       style={{
         background: 'linear-gradient(155deg, #FFFFFF 0%, #FFFDF8 45%, #FEF9E7 100%)',
-        border: '1.5px solid rgba(245, 197, 24, 0.42)',
+        border: '1.5px solid rgba(245, 197, 24, 0.45)',
         boxShadow:
-          '0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 16px 32px -4px rgba(26, 26, 23, 0.16), 0 24px 44px -8px rgba(245, 197, 24, 0.24), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1.5px 2px 0 rgba(245, 197, 24, 0.16)',
+          '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 16px 32px -4px rgba(26, 26, 23, 0.18), 0 24px 44px -8px rgba(245, 197, 24, 0.28), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1.5px 2px 0 rgba(245, 197, 24, 0.16)',
       }}
     >
-      {/* 3D Elevated Header Bar */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-white/90 via-[#FEFDF7] to-[#FEF9E7]/90 border-b border-[#F5C518]/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#F5C518] shadow-[0_0_8px_rgba(245,197,24,0.7)] animate-pulse"></span>
-          <span className="text-xs font-bold uppercase tracking-wider text-[#1A1A17]">
+      {/* 3D Elevated Header Bar - Always pinned to the top */}
+      <div className="flex items-center justify-between px-3.5 py-2.5 bg-gradient-to-r from-white/95 via-[#FEFDF7] to-[#FEF9E7]/95 border-b border-[#F5C518]/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] shrink-0 z-10 sticky top-0 backdrop-blur-md">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#F5C518] shadow-[0_0_8px_rgba(245,197,24,0.8)] animate-pulse shrink-0"></span>
+          <span className="text-xs font-bold uppercase tracking-wider text-[#1A1A17] truncate">
             ML Location Prediction
           </span>
         </div>
+
+        {/* High-visibility Close / Back cross button */}
         <button
           onClick={clearPrediction}
-          className="text-[#747468] hover:text-[#1A1A17] p-1.5 rounded-lg hover:bg-[#F5C518]/20 transition-all hover:scale-105 active:scale-95"
-          title="Close prediction"
+          className="group flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-stone-700 hover:text-red-600 bg-white/95 hover:bg-red-50 border border-stone-200/90 hover:border-red-200 rounded-lg shadow-xs transition-all active:scale-95 cursor-pointer shrink-0 ml-2"
+          title="Close prediction / Back to map (Esc)"
+          aria-label="Close prediction popup"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="transition-transform group-hover:rotate-90 duration-200"
+          >
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
+          <span className="font-semibold">Close</span>
         </button>
       </div>
 
-      <div className="p-4 space-y-3.5">
+      {/* Scrollable Content Body */}
+      <div className="p-3.5 space-y-3 flex-1 overflow-y-auto min-h-0 custom-scrollbar">
         {/* Loading State */}
         {predictLoading && (
-          <div className="py-7 text-center space-y-2.5">
+          <div className="py-7 text-center space-y-3">
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-3 border-[#F5C518]/30 border-t-[#F5C518]" />
             <p className="text-xs font-semibold text-[#1A1A17]">
               Gathering GIS features & running XGBoost for {predictCoords?.lat?.toFixed(3)}, {predictCoords?.lng?.toFixed(3)}…
@@ -53,12 +80,18 @@ export default function PredictionPanel() {
             <p className="text-[11px] text-[#747468]">
               Evaluating OSM industrial tags, Sentinel land cover, & 14-feature classification
             </p>
+            <button
+              onClick={clearPrediction}
+              className="mt-2 inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-stone-600 hover:text-stone-900 bg-white border border-stone-200 rounded-md hover:bg-stone-50 transition-colors shadow-2xs"
+            >
+              Cancel
+            </button>
           </div>
         )}
 
         {/* Error State */}
         {predictError && (
-          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 space-y-1 shadow-[0_2px_6px_rgba(239,68,68,0.08)]">
+          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 space-y-2 shadow-[0_2px_6px_rgba(239,68,68,0.08)]">
             <div className="font-bold flex items-center gap-1.5 text-red-900">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
@@ -66,6 +99,14 @@ export default function PredictionPanel() {
               Prediction Notice
             </div>
             <div>{predictError}</div>
+            <div className="pt-1">
+              <button
+                onClick={clearPrediction}
+                className="px-2.5 py-1 text-[11px] font-bold text-red-700 bg-white border border-red-200 rounded-md hover:bg-red-100 transition-colors cursor-pointer"
+              >
+                Dismiss Notice
+              </button>
+            </div>
           </div>
         )}
 
@@ -226,6 +267,23 @@ export default function PredictionPanel() {
               <div className="text-[11px] text-[#33332D]">
                 {prediction.explanation || prediction.message || "Contextual assessment completed using satellite observations and geospatial models."}
               </div>
+            </div>
+
+            {/* Bottom Dismiss / Back Bar */}
+            <div className="pt-2 border-t border-[#F5C518]/25 flex items-center justify-between gap-2 shrink-0">
+              <span className="text-[10px] text-[#747468]">
+                Press <kbd className="px-1.5 py-0.5 bg-stone-100 border border-stone-300 rounded font-mono text-[9px] text-stone-700 font-semibold shadow-2xs">Esc</kbd> or click button
+              </span>
+              <button
+                onClick={clearPrediction}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-stone-700 hover:text-red-600 bg-white hover:bg-red-50 border border-stone-300/80 hover:border-red-200 rounded-lg shadow-xs transition-all active:scale-95 cursor-pointer"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                <span>Back to Map</span>
+              </button>
             </div>
           </>
         )}

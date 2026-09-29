@@ -59,12 +59,17 @@ export default function HotspotLayer() {
     if (predictCoords && !isNaN(predictCoords.lng) && !isNaN(predictCoords.lat)) {
       const el = document.createElement('div');
       el.className = 'prediction-pin';
+      el.title = 'Click to dismiss prediction';
       el.innerHTML = `
         <div style="position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
           <div style="position: absolute; width: 32px; height: 32px; border-radius: 50%; background: rgba(59, 130, 246, 0.3); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
           <div style="position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #2563EB; border: 2.5px solid #FFFFFF; box-shadow: 0 0 10px rgba(37, 99, 235, 0.8);"></div>
         </div>
       `;
+      el.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        useStore.getState().clearPrediction();
+      });
 
       const marker = new Marker({ element: el })
         .setLngLat([predictCoords.lng, predictCoords.lat])
