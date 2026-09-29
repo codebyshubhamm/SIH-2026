@@ -41,3 +41,9 @@ test_thermos.db
 reference-videos/*.mp4
 reference-videos/*.mov
 reference-videos/*.webm
+
+# Local test / debug dumps
+fires_response.json
+test_*.json
+test_*.mjs
+
