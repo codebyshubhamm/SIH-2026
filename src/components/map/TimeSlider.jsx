@@ -18,12 +18,11 @@ export default function TimeSlider() {
   const draggingRef = useRef(null);
 
   useEffect(() => {
-    setRange(timeSliderValue);
+    if (!timeSliderValue) return;
+    if (Math.abs(range[0] - timeSliderValue[0]) > 0.005 || Math.abs(range[1] - timeSliderValue[1]) > 0.005) {
+      setRange(timeSliderValue);
+    }
   }, [timeSliderValue]);
-
-  useEffect(() => {
-    setTimeSliderValue(range);
-  }, [range, setTimeSliderValue]);
 
   useEffect(() => {
     if (!playing) {
@@ -42,17 +41,14 @@ export default function TimeSlider() {
         let newStart = prev[0] + step;
         let newEnd = prev[1] + step;
 
-        if (newEnd > 1) {
+        if (newEnd > 1 || newStart >= 1) {
           newStart = 0;
           newEnd = width;
         }
 
-        if (newStart >= 1) {
-          newStart = 0;
-          newEnd = width;
-        }
-
-        return [newStart, newEnd];
+        const nextVal = [newStart, newEnd];
+        setTimeSliderValue(nextVal);
+        return nextVal;
       });
 
       animRef.current = requestAnimationFrame(tick);
@@ -60,7 +56,7 @@ export default function TimeSlider() {
 
     animRef.current = requestAnimationFrame(tick);
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
-  }, [playing, speed]);
+  }, [playing, speed, setTimeSliderValue]);
 
   const getPositionFromEvent = useCallback((e) => {
     if (!trackRef.current) return 0;
@@ -78,10 +74,14 @@ export default function TimeSlider() {
       const pos = getPositionFromEvent(ev);
 
       setRange((prev) => {
+        let next;
         if (draggingRef.current === 'start') {
-          return [Math.min(pos, prev[1] - 0.01), prev[1]];
+          next = [Math.min(pos, prev[1] - 0.01), prev[1]];
+        } else {
+          next = [prev[0], Math.max(pos, prev[0] + 0.01)];
         }
-        return [prev[0], Math.max(pos, prev[0] + 0.01)];
+        setTimeSliderValue(next);
+        return next;
       });
     };
 

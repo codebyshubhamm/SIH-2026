@@ -281,6 +281,7 @@ export default function MapCore({ children }) {
         });
 
         mapRef.current = map;
+        window.__map = map;
         // The MapLibre instance is ready for local overlays as soon as the
         // style object is accepted; remote imagery may continue loading.
         markReady();

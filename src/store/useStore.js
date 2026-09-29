@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { fetchLiveEvents, predictLocation as apiPredictLocation } from '../services/api';
-import { mockGeoJSON } from '../data/mockData';
+import { fetchLiveEvents, predictLocation as apiPredictLocation } from '../services/api.js';
+import { mockGeoJSON } from '../data/mockData.js';
 
 export const TIME_PRESETS = {
   '24H': [29 / 30, 1],

@@ -99,14 +99,14 @@ export default function HotspotLayer() {
             type: 'geojson',
             data,
             cluster: true,
-            clusterMaxZoom: 14,
-            clusterRadius: 45,
+            clusterMaxZoom: 13,
+            clusterRadius: 40,
           });
         } else {
           map.getSource(SOURCE_ID).setData(data);
         }
 
-        // 1. Cluster circles - NASA FIRMS style high-contrast fire gradient
+        // 1. Clustered hotspot badges (numbered circles)
         if (!map.getLayer(CLUSTER_LAYER)) {
           map.addLayer({
             id: CLUSTER_LAYER,
@@ -115,25 +115,30 @@ export default function HotspotLayer() {
             filter: ['has', 'point_count'],
             paint: {
               'circle-color': [
-                'step', ['get', 'point_count'],
-                '#DC2626', 10,
-                '#EA580C', 25,
-                '#B91C1C',
+                'step',
+                ['get', 'point_count'],
+                '#F59E0B',
+                5,
+                '#F97316',
+                15,
+                '#EF4444',
               ],
               'circle-radius': [
-                'step', ['get', 'point_count'],
-                16, 10,
-                22, 25,
-                28,
+                'step',
+                ['get', 'point_count'],
+                14,
+                5,
+                18,
+                15,
+                24,
               ],
-              'circle-stroke-width': 2.5,
-              'circle-stroke-color': '#FFA39E',
+              'circle-stroke-width': 2,
+              'circle-stroke-color': '#FFFFFF',
               'circle-opacity': 0.95,
             },
           });
         }
 
-        // 2. Cluster count labels
         if (!map.getLayer(CLUSTER_COUNT_LAYER)) {
           map.addLayer({
             id: CLUSTER_COUNT_LAYER,
@@ -142,7 +147,6 @@ export default function HotspotLayer() {
             filter: ['has', 'point_count'],
             layout: {
               'text-field': '{point_count_abbreviated}',
-              'text-font': ['Open Sans Semibold'],
               'text-size': 12,
             },
             paint: {
@@ -151,31 +155,35 @@ export default function HotspotLayer() {
           });
         }
 
-        // 3. Unclustered points - Outer soft fire glow aura
+        // 2. Soft pulsing fire glow aura (outer beacon)
         if (!map.getLayer(UNCLUSTERED_GLOW_LAYER)) {
-          map.addLayer(
-            {
-              id: UNCLUSTERED_GLOW_LAYER,
-              type: 'circle',
-              source: SOURCE_ID,
-              filter: ['!', ['has', 'point_count']],
-              paint: {
-                'circle-color': '#FF2200',
-                'circle-radius': [
-                  'interpolate', ['linear'], ['zoom'],
-                  3, 8,
-                  8, 14,
-                  14, 22,
-                ],
-                'circle-opacity': 0.45,
-                'circle-blur': 0.7,
-              },
+          map.addLayer({
+            id: UNCLUSTERED_GLOW_LAYER,
+            type: 'circle',
+            source: SOURCE_ID,
+            filter: ['!', ['has', 'point_count']],
+            paint: {
+              'circle-color': [
+                'case',
+                ['>=', ['coalesce', ['get', 'risk_score'], 50], 80], '#FF0000',
+                ['>=', ['coalesce', ['get', 'risk_score'], 50], 60], '#FF3B00',
+                ['>=', ['coalesce', ['get', 'risk_score'], 35], 35], '#FF6B00',
+                '#FFA500'
+              ],
+              'circle-radius': [
+                'interpolate', ['linear'], ['zoom'],
+                2, 6,
+                5, 11,
+                8, 16,
+                14, 24,
+              ],
+              'circle-opacity': 0.6,
+              'circle-blur': 0.75,
             },
-            CLUSTER_LAYER
-          );
+          });
         }
 
-        // 4. Unclustered points - High-contrast vibrant red hotspot dots (NASA FIRMS signature)
+        // 3. High-contrast vibrant red hotspot dot with crisp white border (NASA FIRMS signature)
         if (!map.getLayer(UNCLUSTERED_LAYER)) {
           map.addLayer({
             id: UNCLUSTERED_LAYER,
@@ -185,20 +193,26 @@ export default function HotspotLayer() {
             paint: {
               'circle-color': [
                 'case',
-                ['>=', ['coalesce', ['get', 'risk_score'], 50], 80], '#FF1100',
-                ['>=', ['coalesce', ['get', 'risk_score'], 50], 60], '#FF3B30',
-                ['>=', ['coalesce', ['get', 'risk_score'], 50], 35], '#FF6B00',
-                '#FF8800'
+                ['>=', ['coalesce', ['get', 'risk_score'], 50], 80], '#EF4444',
+                ['>=', ['coalesce', ['get', 'risk_score'], 50], 60], '#F97316',
+                ['>=', ['coalesce', ['get', 'risk_score'], 35], 35], '#FB923C',
+                '#FBBF24'
               ],
               'circle-radius': [
                 'interpolate', ['linear'], ['zoom'],
-                3, 4,
-                8, 6.5,
-                14, 10,
+                2, 3.5,
+                5, 6,
+                8, 8,
+                14, 12,
               ],
-              'circle-stroke-width': 1.5,
+              'circle-stroke-width': [
+                'interpolate', ['linear'], ['zoom'],
+                2, 1,
+                5, 1.5,
+                14, 2,
+              ],
               'circle-stroke-color': '#FFFFFF',
-              'circle-opacity': 0.95,
+              'circle-opacity': 1.0,
             },
           });
         }
@@ -233,17 +247,6 @@ export default function HotspotLayer() {
     };
     map.on('style.load', onStyleLoad);
     map.on('styledata', onStyleLoad);
-
-    // Map click handlers for clusters and unclustered hotspots
-    const onClusterClick = (e) => {
-      const features = map.queryRenderedFeatures(e.point, { layers: [CLUSTER_LAYER] });
-      if (!features || features.length === 0) return;
-      const clusterId = features[0].properties.cluster_id;
-      map.getSource(SOURCE_ID).getClusterExpansionZoom(clusterId, (err, zoom) => {
-        if (err) return;
-        map.flyTo({ center: features[0].geometry.coordinates, zoom, duration: 800 });
-      });
-    };
 
     const onHotspotClick = (e) => {
       if (!e.features || e.features.length === 0) return;
@@ -342,16 +345,32 @@ export default function HotspotLayer() {
       selectEvent(p.id);
     };
 
-    map.on('click', CLUSTER_LAYER, onClusterClick);
-    map.on('click', UNCLUSTERED_LAYER, onHotspotClick);
+    const onClusterClick = (e) => {
+      const features = map.queryRenderedFeatures(e.point, { layers: [CLUSTER_LAYER] });
+      if (!features || features.length === 0) return;
+      const clusterId = features[0].properties.cluster_id;
+      const source = map.getSource(SOURCE_ID);
+      if (source && source.getClusterExpansionZoom) {
+        source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+          if (err) return;
+          map.easeTo({
+            center: features[0].geometry.coordinates,
+            zoom: zoom + 0.5,
+            duration: 600,
+          });
+        });
+      }
+    };
 
+    map.on('click', CLUSTER_LAYER, onClusterClick);
     map.on('mouseenter', CLUSTER_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
     map.on('mouseleave', CLUSTER_LAYER, () => { map.getCanvas().style.cursor = ''; });
+
+    map.on('click', UNCLUSTERED_LAYER, onHotspotClick);
     map.on('mouseenter', UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
     map.on('mouseleave', UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = ''; });
 
     return () => {
-      console.debug('[HotspotLayer] Cleanup running');
       retryTimers.forEach(clearTimeout);
       if (popupRef.current) popupRef.current.remove();
       map.off('click', CLUSTER_LAYER, onClusterClick);

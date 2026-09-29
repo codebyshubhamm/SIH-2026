@@ -13,15 +13,12 @@ export default function CommandCentre() {
   const dataSource = useStore((s) => s.dataSource);
   const loading = useStore((s) => s.loading);
 
-  console.info('[CommandCentre] Current dataSource state:', dataSource, '| Loading:', loading);
-
   const [mobileView, setMobileView] = useState('map'); // 'map' | 'priority'
   const [sidebarCat, setSidebarCat] = useState('ALL'); // 'ALL' | 'INDUSTRIAL' | 'WILDFIRE' | 'MINING' | 'AGRI'
   const [sidebarSort, setSidebarSort] = useState('RISK'); // 'RISK' | 'FRP' | 'RECENT'
 
   // Single source of truth: BOTH map and sidebar consume the exact same events
   const events = getFilteredEvents();
-  console.info('[CommandCentre] Filtered events count:', events.length, '| Sample event 0:', events[0]?.properties?.id);
 
   const topEvents = useMemo(() => {
     let list = [...events];
@@ -107,18 +104,10 @@ export default function CommandCentre() {
                 Priority Events
               </h2>
               <div className="flex items-center gap-1.5 mt-0.5">
-                {(() => {
-                  console.info('[CommandCentre:FeedStatus:BEFORE] Evaluating feed label. dataSource =', dataSource, '| Loading =', loading, '| Events count =', events.length);
-                  return null;
-                })()}
                 <span className={`w-1.5 h-1.5 rounded-full ${dataSource === 'live' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">
                   {dataSource === 'live' ? 'NASA FIRMS Live' : 'Demo Feed'}
                 </span>
-                {(() => {
-                  console.info('[CommandCentre:FeedStatus:AFTER] Rendered label:', dataSource === 'live' ? 'NASA FIRMS Live' : 'Demo Feed');
-                  return null;
-                })()}
               </div>
             </div>
             <span className="font-data text-scale-xs text-[var(--color-text-tertiary)] tabular-nums">

@@ -33,19 +33,19 @@ export default function PriorityQueue() {
   }, [events]);
 
   const toggleCategory = (cat) => {
-    const current = filters.categories;
+    const current = filters.categories.length === 0 ? CATEGORIES : filters.categories;
     const next = current.includes(cat)
       ? current.filter((c) => c !== cat)
       : [...current, cat];
-    setFilter('categories', next);
+    setFilter('categories', next.length === CATEGORIES.length ? [] : next);
   };
 
   const toggleRisk = (tier) => {
-    const current = filters.riskTiers;
+    const current = filters.riskTiers.length === 0 ? RISK_TIERS : filters.riskTiers;
     const next = current.includes(tier)
       ? current.filter((t) => t !== tier)
       : [...current, tier];
-    setFilter('riskTiers', next);
+    setFilter('riskTiers', next.length === RISK_TIERS.length ? [] : next);
   };
 
   return (

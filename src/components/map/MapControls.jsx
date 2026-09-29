@@ -40,6 +40,7 @@ export default function MapControls() {
   const showIndustrialOverlay = useStore((s) => s.showIndustrialOverlay);
   const toggleIndustrialOverlay = useStore((s) => s.toggleIndustrialOverlay);
   const setFilter = useStore((s) => s.setFilter);
+  const filters = useStore((s) => s.filters);
   const predictLocation = useStore((s) => s.predictLocation);
   const eventsCount = useStore((s) => s.events?.features?.length ?? 0);
 
@@ -89,8 +90,9 @@ export default function MapControls() {
       return;
     }
 
-    // Check known cities/places
     const key = searchValue.toLowerCase().trim();
+
+    // Check known cities/places
     if (KNOWN_PLACES[key]) {
       const [lng, lat] = KNOWN_PLACES[key];
       flyTo([lng, lat], 11);
@@ -98,8 +100,31 @@ export default function MapControls() {
       return;
     }
 
-    // Default fallback: parse words or notify
+    // Check if matching an event ID or region in store
+    const allEvents = useStore.getState().events?.features || [];
+    const matchedEvent = allEvents.find((f) => {
+      const id = (f.properties?.id || f.id || '').toLowerCase();
+      const region = (f.properties?.region || '').toLowerCase();
+      return id === key || id.includes(key) || region.includes(key);
+    });
+    if (matchedEvent && matchedEvent.geometry?.coordinates) {
+      const [lng, lat] = matchedEvent.geometry.coordinates;
+      flyTo([lng, lat], 12);
+      useStore.getState().selectEvent(matchedEvent.properties?.id || matchedEvent.id);
+      setFilter('searchQuery', searchValue);
+      return;
+    }
+
+    // Default fallback: parse words into store filter
     setFilter('searchQuery', searchValue);
+  };
+
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setSearchValue(val);
+    if (!val.trim()) {
+      setFilter('searchQuery', '');
+    }
   };
 
   const mapModeButtons = useMemo(() => HEATMAP_MODES, []);
@@ -141,9 +166,9 @@ export default function MapControls() {
           <div className="relative">
             <input
               type="text"
-              placeholder="Search place or lat, lng to predict…"
+              placeholder="Search place, event ID, or coords…"
               value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
+              onChange={handleSearchChange}
               className="h-8 w-60 pl-8 pr-2.5 text-xs bg-slate-900/90 text-white placeholder-slate-400 backdrop-blur-md border border-slate-700 rounded-lg focus:outline-none focus:border-red-500 shadow-lg"
             />
             <svg className="absolute left-2.5 top-2 text-slate-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -199,14 +224,22 @@ export default function MapControls() {
         </div>
 
         <button
-          onClick={() => setDrawing((prev) => !prev)}
+          onClick={() => {
+            if (filters?.bbox) {
+              setFilter('bbox', null);
+            } else {
+              setDrawing((prev) => !prev);
+            }
+          }}
           className={`h-7 px-2 text-[11px] font-medium border rounded-lg shadow-md transition-colors ${
-            drawing
+            filters?.bbox
+              ? 'bg-amber-600 border-amber-500 text-white font-semibold'
+              : drawing
               ? 'bg-red-600 border-red-500 text-white'
               : 'bg-slate-900/90 border-slate-700 text-slate-200 hover:bg-slate-800'
           }`}
         >
-          {drawing ? 'Click map for BBox…' : 'BBox'}
+          {filters?.bbox ? 'Clear BBox' : drawing ? 'Click map for BBox…' : 'BBox'}
         </button>
 
         <button
