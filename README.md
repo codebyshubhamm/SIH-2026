@@ -314,7 +314,7 @@ npm run preview
 ## 11. Live Demo & Submission Links
 
 - **Live Web Application:** [https://sih-2026-nu-ten.vercel.app/](https://sih-2026-nu-ten.vercel.app/)
-- **Demo Video Walkthrough:** See [submission/DEMO.md]()
+- **Demo Video Walkthrough:** See [submission/DEMO.md](https://www.youtube.com/watch?v=dqSnv2gGfjo)
 
 
 ---
